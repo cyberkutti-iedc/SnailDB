@@ -91,4 +91,3 @@ Contributions are welcome! If you'd like to contribute to SnailDB, please check 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 ```
 
-Feel free to customize the content further based on your specific project details and preferences.

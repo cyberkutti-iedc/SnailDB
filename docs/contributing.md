@@ -12,7 +12,7 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 
 ### Reporting Bugs
 
-If you find a bug, please ensure that it hasn't been reported before. You can check the existing issues on the [GitHub issues page](https://github.com/your-username/snaildb/issues). If the bug is not reported, please open a new issue with a clear and detailed description of the problem, along with steps to reproduce it.
+If you find a bug, please ensure that it hasn't been reported before. You can check the existing issues on the [GitHub issues page](https://github.com/cyberkutti-iedc/snailDB/issues). If the bug is not reported, please open a new issue with a clear and detailed description of the problem, along with steps to reproduce it.
 
 ### Requesting Features
 
@@ -34,7 +34,7 @@ We'll review your changes and provide feedback. Once everything is ready, your p
 
 To set up a development environment:
 
-1. Clone the repository: `git clone https://github.com/your-username/snaildb.git`
+1. Clone the repository: `git clone https://github.com/cyberkutti-iedc/snailDB.git`
 2. Navigate to the project directory: `cd snaildb`
 3. Create a virtual environment: `python -m venv venv`
 4. Activate the virtual environment:

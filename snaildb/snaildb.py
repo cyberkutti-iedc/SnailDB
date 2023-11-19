@@ -108,7 +108,7 @@ class SnailDB:
 
     def __init__(self, db_file, capacity=None):
         self.db_file = Path(db_file)
-        self.tables = {}
+        self.tables = self.load_data()  # Load data during initialization
         self.default_table = self.get_table(self.default_table_name)
         self.cache = LRUCache(capacity)
 
@@ -171,18 +171,27 @@ class SnailDB:
 
     def update(self, query, update_fields, multi=False):
         for table_name, table in self.tables.items():
-            for doc in table:
+            updated_indices = []
+            for i, doc in enumerate(table):
                 if all(doc.get(key) == value for key, value in query.items()):
-                    if not multi:
-                        break
-                    for field, operation in update_fields.items():
-                        if operation == 'increment':
-                            doc[field] = doc.get(field, 0) + update_fields[field]
-                        elif operation == 'concatenate':
-                            if field in doc:
-                                doc[field] += update_fields[field]
-                            else:
-                                doc[field] = update_fields[field]
+                    print(f"Updating document in table {table_name}: {doc}")
+                    updated_indices.append(i)
+                    for field, value in update_fields.items():
+                        doc[field] = value
+                        print(f"Updated field '{field}': {value}")
+
+            if not multi and updated_indices:
+                # Break if not updating all documents and at least one is updated
+                break
+
+            # Remove the updated documents from the table
+            for index in reversed(updated_indices):
+                table.pop(index)
+
+            # Append the updated documents back to the end of the table
+            for index in updated_indices:
+                table.append(table.pop(index))
+
         self.save_data({table_name: table for table_name, table in self.tables.items()})
         self.cache.clear()
 
@@ -199,23 +208,37 @@ class SnailDB:
         self.cache.clear()
 
     def create_index(self, index_name, fields, table_name=None):
-        # Create an index for faster querying
-        table = self.get_table(table_name or self.default_table_name)
-        index = {tuple(doc.get(field) for field in fields): doc for doc in table}
-        self.tables[index_name] = index
+     table = self.get_table(table_name or self.default_table_name)
+     index = {str(tuple(doc.get(field) for field in fields)): doc for doc in table}
+     updated_tables = self.tables.copy()
+     updated_tables[index_name] = index
+     self.save_data(updated_tables)
+     self.cache.clear()
+
+
+
 
     def find_with_index(self, index_name, query_values):
-        # Query using an index
-        index = self.tables.get(index_name)
-        if index:
-            return [index.get(tuple(query_values), {})]
+    # Query using an index
+     index = self.tables.get(index_name)
+     if index:
+        key = str(tuple(query_values))
+        if key in index:
+            return [index[key]]
         else:
-            raise ValueError(f"Index {index_name} not found.")
+            return []
+     else:
+        raise ValueError(f"Index {index_name} not found.")
+
 
     def remove_index(self, index_name):
-        # Remove an index
-        if index_name in self.tables:
-            del self.tables[index_name]
+    # Remove an index
+     if index_name in self.tables:
+        del self.tables[index_name]
+        self.save_data({table_name: table for table_name, table in self.tables.items()})
+     else:
+        raise ValueError(f"Index {index_name} not found.")
+
 
 
     
@@ -305,8 +328,7 @@ class SnailDB:
     def contains_document_with_id(self, document_id):
         return any(doc.get('_id') == document_id for table in self.tables.values() for doc in table)
 
-#if __name__ == "__main__":
-#    db = SnailDB('snaildb.json')
 
-    # Insert a document
-  #  db.insert({'name': 'John', 'age': 25, 'city': 'New York'})
+
+
+

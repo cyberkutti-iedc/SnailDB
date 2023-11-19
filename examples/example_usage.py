@@ -1,71 +1,65 @@
 from snaildb import SnailDB
 
+db = SnailDB("example_db.json")
+# Example 0: Insert a document
+document1 = {"_id": "1", "name": "Alice", "age": 30, "city": "Wonderland"}
+document_id = db.insert(document1)
+print(f"\nDocument ID after insertion: {document_id}")
 
-# Create a SnailDB instance
-#db = SnailDB('snaildb.json')
-#db.insert({'name': 'Sreeraj', 'age': 25, 'city': 'New York'})
-# Insert a document
-#document_id = db.insert({'name': 'John', 'age': 25, 'city': 'New York'})
-#print("Inserted Document ID:", document_id)
-
-# Get all documents
-#all_documents = db.get_all()
-#print("All Documents:", all_documents)
-
-# Query documents
-#query_result = db.find({'name': 'John'})
-#print("Query Result:", query_result)
-
-# Update documents
-#db.update({'name': 'John'}, {'age': 26})
-
-# Remove documents based on a query
-#db.remove({'name': 'John'})
-
-# Remove all documents
-#db.remove_all()
-
-# Create a new query object
-#query_func = db.create_query('age', '>', 30)
-#filtered_documents = [doc for doc in db.get_all() if query_func(doc)]
-#print("Filtered Documents:", filtered_documents)
-
-# Match any document with a key field value equal to 2
-#match_result = db.match_any([('age', '==', 2)])
-#print("Match Result:", match_result)
+# Example 1: Insert a document without id
+document1 = {"name": "Alice", "age": 30, "city": "Wonderland"}
+document_id = db.insert(document1)
+print(f"\nDocument ID after insertion: {document_id}")
 
 
+# Example 2: Insert multiple documents
+documents_to_insert = [
+    {"name": "Bob", "age": 25, "city": "Dreamland"},
+    {"name": "Charlie", "age": 28, "city": "Fantasyville"},
+]
+documents_ids = db.insert_multiple(documents_to_insert)
+print("\nDocument IDs after multiple insertions:", documents_ids)
+# Example 3: Get all documents in the default table
+all_documents = db.get_all()
+print("\nAll Documents:")
+print(all_documents)
 
-# Example Usage
-#from snaildb import SnailDB
-if __name__ == "__main__":
-    db = SnailDB('snaildb.json')
+# Example 4: Find documents based on a query
+query = {"city": "Wonderland"}
+found_documents = db.find(query)
+print("\nFound Documents:")
+print(found_documents)
 
-    # Insert a document
-    db.insert({'name': 'test', 'age': 25, 'city': 'New York'})
+# Example 5: Update documents based on a query
+update_query = {"name": "Alice"}
+update_fields = {"age": 31, "city": "Updated Wonderland"}
+db.update(update_query, update_fields)
+updated_document = db.find(update_query)[0]
+print("\nUpdated Document:")
+print(updated_document)
 
-    # Get all documents
-    all_documents = db.get_all()
-    print("All Documents:", all_documents)
+# Example 6: Remove documents based on a query
+remove_query = {"name": "Bob"}
+db.remove(remove_query)
+print("\nDocuments after removal:")
+print(db.get_all())
 
-    # Query documents
-    #query_result = db.find({'name': 'John'})
-    #print("Query Result:", query_result)
 
-    # Update documents
-    db.update({'name': 'John'}, {'age': 26})
+# Example 7: Create an index for faster querying
+index_fields = ["name", "city"]
+db.create_index("name_city_index", index_fields)
 
-    # Remove documents based on a query
-    db.remove({'name': 'John'})
 
-    # Remove all documents
-    #db.remove()
+# Example 8: Find documents using an index
+index_query_values = ["Alice", "Updated Wonderland"]
+found_with_index = db.find_with_index("name_city_index", index_query_values)
+print("\nFound with Index:")
+print(found_with_index)
 
-    # Create a new query object
-   # query_func = db.create_query('age', '>', 30)
-    #filtered_documents = [doc for doc in db.get_all() if query_func(doc)]
-    #print("Filtered Documents:", filtered_documents)
+# Example 9: Remove an index
+db.remove_index("name_city_index")
 
-    # Match any document with a key field value equal to 2
-    #match_result = db.match_any([('age', '==', 2)])
-    #print("Match Result:", match_result)
+# Example 10: Remove all
+db.remove_all()
+print("\nDocuments after removing all:")
+print(db.get_all())

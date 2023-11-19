@@ -4,17 +4,26 @@ with open('README.md', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='snaildb',
+    name='snailDB',
     version='0.0.1',
     author='SREERAJ V RAJESH',
     author_email='cyberkutti@gmail.com',
-    description='A simple non-SQL database like TinyDB or MongoDB using Python',
+    description='SnailDB is a lightweight, non-SQL database for Python, designed for simplicity and ease of use',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/cyberkutti-iedc/snaildb',
+    url='https://github.com/cyberkutti-iedc/snailDB',
     packages=find_packages(),
     install_requires=[
-        # List your dependencies here
+        'fastjsonschema',
+        'ujson',
+        'orjson',
+        'jsonschema',
+        'fastjsonschema',
+        'pathspec',
+        'repath',
+        'typing_extensions',
+        'Flask',
+        'Flask-SocketIO'
     ],
     entry_points={
         'console_scripts': [

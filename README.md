@@ -16,7 +16,7 @@ SnailDB is a lightweight, non-SQL database for Python, designed for simplicity a
 ## Installation
 
 ```bash
-pip install snaildb
+pip install snailDB
 ```
 
 ## Quick Start

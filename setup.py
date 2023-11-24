@@ -5,7 +5,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='snailDB',
-    version='0.0.1',
+    version='0.0.2',
     author='SREERAJ V RAJESH',
     author_email='cyberkutti@gmail.com',
     description='SnailDB is a lightweight, non-SQL database for Python, designed for simplicity and ease of use',
@@ -13,6 +13,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/cyberkutti-iedc/snailDB',
     packages=find_packages(),
+    keywords=["non-sql","database","python-database","lightwight database","non-sql database"],
     install_requires=[
         'fastjsonschema',
         'ujson',

@@ -1,70 +1,114 @@
-# tests/test_snaildb.py
 import unittest
+import tempfile
+import json
 from snaildb import SnailDB
-
 
 class TestSnailDB(unittest.TestCase):
     def setUp(self):
-        # Set up a test database
-        self.db_file = 'test_db.json'
+        self.db_file = tempfile.NamedTemporaryFile(delete=False).name
         self.db = SnailDB(self.db_file)
 
     def tearDown(self):
-        # Remove the test database after the tests
-        self.db.remove_all()
+        pass
 
-    def test_insert_document(self):
-        document_id = self.db.insert({'name': 'John'})
-        self.assertEqual(self.db.get_document_count(), 1)
-        self.assertTrue(self.db.contains_document_with_id(document_id))
+    def test_insert_single_document(self):
+        document = {"_id": 1, "name": "Alice", "age": 30, "city": "Wonderland"}
+        document_id = self.db.insert(document)
+        self.assertEqual(document_id, 1)
+
+        retrieved_document = self.db.find({"_id": 1})[0]
+        self.assertEqual(retrieved_document, document)
 
     def test_insert_multiple_documents(self):
-        documents = [{'name': 'John'}, {'name': 'Jane'}]
+        documents = [
+            {"name": "Bob", "age": 25, "city": "Dreamland"},
+            {"name": "Charlie", "age": 28, "city": "Fantasyville"},
+        ]
         document_ids = self.db.insert_multiple(documents)
-        self.assertEqual(self.db.get_document_count(), 2)
-        self.assertTrue(all(self.db.contains_document_with_id(doc_id) for doc_id in document_ids))
+        self.assertEqual(document_ids, [2, 3])
 
-    def test_get_all_documents(self):
-        documents = [{'name': 'John'}, {'name': 'Jane'}]
-        self.db.insert_multiple(documents)
-        all_documents = self.db.get_all()
-        self.assertEqual(len(all_documents), 2)
+        retrieved_documents = self.db.find({"age": 25})
+        self.assertEqual(len(retrieved_documents), 1)
+        self.assertEqual(retrieved_documents[0]["name"], "Bob")
 
-    def test_find_documents(self):
-        documents = [{'name': 'John', 'age': 25}, {'name': 'Jane', 'age': 30}]
-        self.db.insert_multiple(documents)
-        found_documents = self.db.find({'age': 25})
-        self.assertEqual(len(found_documents), 1)
-        self.assertEqual(found_documents[0]['name'], 'John')
+    def test_update_document(self):
+        document = {"_id": 1, "name": "Alice", "age": 30, "city": "Wonderland"}
+        self.db.insert(document)
+
+        update_query = {"name": "Alice"}
+        update_fields = {"age": 31, "city": "Updated Wonderland"}
+        self.db.update(update_query, update_fields)
+
+        updated_document = self.db.find(update_query)[0]
+        self.assertEqual(updated_document["age"], 31)
+        self.assertEqual(updated_document["city"], "Updated Wonderland")
 
     def test_remove_document(self):
-        document_id = self.db.insert({'name': 'John'})
-        self.assertEqual(self.db.get_document_count(), 1)
+        document = {"_id": 1, "name": "Alice", "age": 30, "city": "Wonderland"}
+        self.db.insert(document)
 
-        # Remove the document by ID
-        self.db.remove({'_id': document_id})
-        self.assertEqual(self.db.get_document_count(), 0)
-        self.assertFalse(self.db.contains_document_with_id(document_id))
+        remove_query = {"name": "Alice"}
+        self.db.remove(remove_query)
 
-    # Modify the test_update_document test case in test_snaildb.py
+        remaining_documents = self.db.find()
+        self.assertEqual(len(remaining_documents), 0)
 
-def test_update_document(self):
-    document_id = self.db.insert({'name': 'John', 'age': 25, 'city': 'New York'})
-    
-    # Update the document
-    self.db.update({'_id': document_id}, {'name': 'update', 'age': 30})
+    def test_create_index_and_find_with_index(self):
+        documents = [
+            {"name": "Alice", "city": "Wonderland"},
+            {"name": "Bob", "city": "Dreamland"},
+            {"name": "Charlie", "city": "Fantasyville"},
+        ]
+        self.db.insert_multiple(documents)
 
-    # Retrieve the updated document
-    updated_document = self.db.find({'_id': document_id})[0]
+        index_fields = ["name", "city"]
+        index_name = "name_city_index"
+        self.db.create_index(index_name, index_fields)
 
-    # Check if the 'name' field is updated
-    self.assertEqual(updated_document['name'], 'update')
-    
-    # Check if other fields are updated as expected
-    self.assertEqual(updated_document['age'], 30)
-    self.assertEqual(updated_document['city'], 'New York')
+        query_values = ["Alice", "Wonderland"]
+        found_with_index = self.db.find_with_index(index_name, query_values)
+        self.assertEqual(len(found_with_index), 1)
+        self.assertEqual(found_with_index[0]["name"], "Alice")
 
+        self.db.remove_index(index_name)
 
+    def test_remove_all_documents(self):
+        documents = [
+            {"name": "Alice", "age": 30, "city": "Wonderland"},
+            {"name": "Bob", "age": 25, "city": "Dreamland"},
+        ]
+        self.db.insert_multiple(documents)
+
+        self.db.remove_all()
+
+        remaining_documents = self.db.find()
+        self.assertEqual(len(remaining_documents), 0)
+
+    def test_query_documents(self):
+        documents = [
+            {"name": "Alice", "age": 30, "city": "Wonderland"},
+            {"name": "Bob", "age": 25, "city": "Dreamland"},
+            {"name": "Charlie", "age": 28, "city": "Fantasyville"},
+        ]
+        self.db.insert_multiple(documents)
+
+        result = self.db.query(lambda doc: doc['name'] == 'Alice')
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Alice")
+
+    def test_match_any_documents(self):
+        documents = [
+            {"name": "Alice", "age": 30, "city": "Wonderland"},
+            {"name": "Bob", "age": 25, "city": "Dreamland"},
+            {"name": "Charlie", "age": 28, "city": "Fantasyville"},
+        ]
+        self.db.insert_multiple(documents)
+
+        query = [("age", ">", 25), ("city", "==", "Fantasyville")]
+        result = self.db.match_any(query)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]["name"], "Bob")
+        self.assertEqual(result[1]["name"], "Charlie")
 
 if __name__ == '__main__':
     unittest.main()
